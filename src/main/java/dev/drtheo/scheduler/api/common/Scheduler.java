@@ -30,7 +30,7 @@ public class Scheduler {
         ServerTickEvents.START_WORLD_TICK.register(world -> tickMap(world, startWorldTickTasks));
         ServerTickEvents.END_WORLD_TICK.register(world -> tickMap(world, endWorldTickTasks));
         ServerTickEvents.END_SERVER_TICK.register(server -> endServerTickTasks.removeIf(Task::tick));
-        ServerTickEvents.END_SERVER_TICK.register(server -> startServerTickTasks.removeIf(Task::tick));
+        ServerTickEvents.START_SERVER_TICK.register(server -> startServerTickTasks.removeIf(Task::tick));
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             this.endServerTickTasks.clear();
