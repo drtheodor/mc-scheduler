@@ -8,7 +8,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Util;
 
 import java.util.Deque;
-import java.util.IdentityHashMap;
+import java.util.WeakHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutorService;
@@ -21,16 +21,16 @@ public class Scheduler {
 
     protected final Deque<Task<?>> endServerTickTasks = new ConcurrentLinkedDeque<>();
     protected final Deque<Task<?>> startServerTickTasks = new ConcurrentLinkedDeque<>();
-    protected final IdentityHashMap<ServerWorld, Deque<Task<?>>> startWorldTickTasks = new IdentityHashMap<>();
-    protected final IdentityHashMap<ServerWorld, Deque<Task<?>>> endWorldTickTasks = new IdentityHashMap<>();
+    protected final WeakHashMap<ServerWorld, Deque<Task<?>>> startWorldTickTasks = new WeakHashMap<>();
+    protected final WeakHashMap<ServerWorld, Deque<Task<?>>> endWorldTickTasks = new WeakHashMap<>();
 
     private static Scheduler self;
 
     private Scheduler() {
         ServerTickEvents.START_WORLD_TICK.register(world -> tickMap(world, startWorldTickTasks));
         ServerTickEvents.END_WORLD_TICK.register(world -> tickMap(world, endWorldTickTasks));
-        ServerTickEvents.END_SERVER_TICK.register(server -> endServerTickTasks.removeIf(Task::tick));
         ServerTickEvents.START_SERVER_TICK.register(server -> startServerTickTasks.removeIf(Task::tick));
+        ServerTickEvents.END_SERVER_TICK.register(server -> endServerTickTasks.removeIf(Task::tick));
 
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
             this.endServerTickTasks.clear();
